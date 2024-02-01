@@ -1,4 +1,5 @@
 import cloneDeep from "lodash.clonedeep";
+import {config} from "process";
 import {
 	AbstractDate,
 	DateTokenConfiguration,
@@ -283,7 +284,8 @@ export function dateTokenConfigurationIsTypeNumber(
 export function parseAbstractDate(
 	groupsToCheck: string[],
 	metadataString: string,
-	reg: RegExp | string
+	reg: RegExp | string,
+	tokenConfigurations: DateTokenConfiguration[]
 ): AbstractDate | undefined {
 	const matches = metadataString.match(reg);
 
@@ -292,7 +294,22 @@ export function parseAbstractDate(
 	const { groups } = matches;
 
 	const output = groupsToCheck.reduce((accumulator, groupName) => {
-		const value = Number(groups[groupName]);
+		const conf = tokenConfigurations.find(
+			({ name }) => name === groupName
+		);
+		if (!conf) {
+			throw new Error(
+				`[April's not so automatic timelines] - No date token configuration found for ${groupName}, please setup your date tokens correctly`
+			);
+		}
+
+		var value = NaN;
+		if (conf.type === DateTokenType.string) {
+			const index = conf.dictionary.indexOf(groups[groupName]);
+			value = ((index === -1) ? NaN : index);
+		} else {
+			value = Number(groups[groupName]);
+		}
 
 		// In the case of a faulty regex given by the user in the settings
 		if (!isNaN(value)) accumulator.push(value);

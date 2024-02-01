@@ -163,6 +163,7 @@ export function getAbstractDateFromMetadata(
 	return parseAbstractDate(
 		groupsToCheck,
 		stringValue,
-		settings.dateParserRegex
+		settings.dateParserRegex,
+		settings.dateTokenConfiguration
 	);
 }
